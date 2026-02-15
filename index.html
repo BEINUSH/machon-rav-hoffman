@@ -3,13 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ניהול מכון רב הופמן</title>
+    <title>מכון רב הופמן - ניהול מרכזי</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: sans-serif; }
-        iframe { width: 100%; height: 100vh; border: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&display=swap');
+        body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
+        .sidebar-item:hover { background-color: #334155; }
+        .active-tab { background-color: #1e293b; border-right: 4px solid #3b82f6; }
     </style>
 </head>
-<body>
-    <iframe src="https://script.google.com/macros/s/AKfycbx7NrrOlNeEa94JPWgPb25wVa-YdLAgLflftVNnZz__ZbDRbLFFy3J4Pb2HaGvfsfL39g/exec"></iframe>
+<body class="flex min-h-screen">
+
+    <aside class="w-64 bg-slate-800 text-white flex-shrink-0 hidden md:flex flex-col">
+        <div class="p-6 text-2xl font-bold border-b border-slate-700 text-center">
+            מכון רב הופמן
+            <div class="text-xs font-light text-slate-400 mt-1">ניהול והוצאה לאור</div>
+        </div>
+        <nav class="flex-1 mt-4">
+            <a href="#" onclick="switchTab('dashboard')" class="sidebar-item active-tab block py-3 px-6 transition"><i class="fas fa-chart-line ml-2"></i> דשבורד מרכזי</a>
+            <a href="#" onclick="switchTab('tasks')" class="sidebar-item block py-3 px-6 transition"><i class="fas fa-tasks ml-2"></i> משימות (חודש/טווח ארוך)</a>
+            <a href="#" onclick="switchTab('books')" class="sidebar-item block py-3 px-6 transition"><i class="fas fa-book ml-2"></i> מערך הספרים והדפסה</a>
+            <a href="#" onclick="switchTab('donors')" class="sidebar-item block py-3 px-6 transition"><i class="fas fa-hand-holding-heart ml-2"></i> גיוס כספים ותורמים</a>
+            <a href="#" onclick="switchTab('logistics')" class="sidebar-item block py-3 px-6 transition"><i class="fas fa-plane-departure ml-2"></i> הפצה וחו"ל</a>
+            <a href="#" onclick="switchTab('expenses')" class="sidebar-item block py-3 px-6 transition"><i class="fas fa-wallet ml-2"></i> חובות לספקים</a>
+        </nav>
+        <div class="p-4 border-t border-slate-700 text-xs text-slate-400">
+            בעלים: מאיר שמחה שטיין
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <header class="bg-white shadow-sm p-4 flex justify-between items-center">
+            <h1 id="page-title" class="text-xl font-bold text-slate-700">דשבורד מרכזי</h1>
+            <button onclick="refreshData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition">
+                <i class="fas fa-sync-alt ml-1"></i> רענן נתונים
+            </button>
+        </header>
+
+        <section class="p-6 overflow-y-auto h-full">
+            <div id="loading" class="text-center py-20">
+                <div class="animate-spin text-blue-600 text-4xl mb-4"><i class="fas fa-spinner"></i></div>
+                <p class="text-slate-500">מושך נתונים מהשיטס...</p>
+            </div>
+
+            <div id="tab-content" class="hidden">
+                </div>
+        </section>
+    </main>
+
+    <script>
+        // הקישור ששלחת (מוגדר כ-Proxy לשליפת הנתונים)
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrPyMHZdUfK-jl0DiVVYwnDgG6t-gVRkrzi8ddJddzMLdd7HxNBnsUPmMIgV5rDP19/exec";
+        
+        let globalData = {};
+
+        // טעינת נתונים ראשונית
+        async function refreshData() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('tab-content').classList.add('hidden');
+            
+            try {
+                // שים לב: השיטס צריך להחזיר JSON עם הפרמטר ?action=getData
+                const response = await fetch(APPS_SCRIPT_URL + "?action=getData");
+                globalData = await response.json();
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('tab-content').classList.remove('hidden');
+                switchTab('dashboard'); // ברירת מחדל
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('loading').innerHTML = `<p class="text-red-500 font-bold">שגיאה בחיבור לנתונים. וודא שהקישור תקין ושהפריסה ב-Apps Script מוגדרת ל-Anyone.</p>`;
+            }
+        }
+
+        function switchTab(tab) {
+            const content = document.getElementById('tab-content');
+            const title = document.getElementById('page-title');
+            
+            // עדכון כותרת
+            const titles = {
+                dashboard: 'דשבורד מרכזי',
+                tasks: 'משימות ולו"ז ביצוע',
+                books: 'מצב הוצאה לאור והדפסה',
+                donors: 'גיוס כספים ומתנות',
+                logistics: 'לוגיסטיקה ואספקה חו"ל',
+                expenses: 'ניהול חובות וספקים'
+            };
+            title.innerText = titles[tab];
+
+            // בניית התוכן לפי הטאב (דוגמה למשימות)
+            if(tab === 'tasks') {
+                renderTasks();
+            } else if (tab === 'dashboard') {
+                renderDashboard();
+            } else {
+                content.innerHTML = `<div class="bg-white p-10 rounded shadow text-center">הקטגוריה "${titles[tab]}" בטעינה...</div>`;
+            }
+        }
+
+        function renderDashboard() {
+            const content = document.getElementById('tab-content');
+            content.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-blue-500">
+                        <h3 class="text-slate-500 text-sm italic">משימות דחופות</h3>
+                        <p class="text-3xl font-bold text-slate-800 mt-2">12</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-green-500">
+                        <h3 class="text-slate-500 text-sm italic">גויס החודש</h3>
+                        <p class="text-3xl font-bold text-slate-800 mt-2">₪45,000</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-amber-500">
+                        <h3 class="text-slate-500 text-sm italic">ספרים בהדפסה</h3>
+                        <p class="text-3xl font-bold text-slate-800 mt-2">3</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTasks() {
+            const content = document.getElementById('tab-content');
+            // כאן נשתמש ב-globalData.tasks (בהנחה שזה מבנה ה-JSON שלך)
+            content.innerHTML = `
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <table class="w-full text-right border-collapse">
+                        <thead class="bg-slate-50 text-slate-600">
+                            <tr>
+                                <th class="p-4 border-b">משימה</th>
+                                <th class="p-4 border-b">דחיפות</th>
+                                <th class="p-4 border-b">מנהל ביצוע</th>
+                                <th class="p-4 border-b">סטטוס</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-4 border-b font-medium">הגהה סופית "יסודות החינוך"</td>
+                                <td class="p-4 border-b"><span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">דחוף</span></td>
+                                <td class="p-4 border-b">אחראי סטטוסים</td>
+                                <td class="p-4 border-b text-blue-600">בטיפול</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // הפעלה ראשונית
+        window.onload = refreshData;
+    </script>
 </body>
 </html>
