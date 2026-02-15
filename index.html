@@ -192,14 +192,14 @@
                             <span class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">${high.length} משימות</span>
                         </div>
                         ${high.length === 0 ? '<p class="text-slate-400 italic text-sm">אין משימות דחופות כרגע</p>' : ''}
-                        ${high.map(t => `
+                        ${high.map((t, idx) => `
                             <div class="p-4 bg-red-50 rounded-xl mb-3 border border-red-100 hover:shadow-md transition">
                                 <div class="font-bold text-slate-800 mb-1">${t.משימה}</div>
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-slate-500">
                                         <i class="fas fa-user ml-1"></i> ${t.מנהל}
                                     </span>
-                                    <button class="text-xs text-red-600 hover:text-red-700 font-bold">
+                                    <button onclick="completeTask('${t.משימה}')" class="text-xs text-red-600 hover:text-red-700 font-bold hover:underline">
                                         <i class="fas fa-check ml-1"></i> סמן כבוצע
                                     </button>
                                 </div>
@@ -213,14 +213,14 @@
                             <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">${longTerm.length} משימות</span>
                         </div>
                         ${longTerm.length === 0 ? '<p class="text-slate-400 italic text-sm">אין משימות לטווח ארוך</p>' : ''}
-                        ${longTerm.map(t => `
+                        ${longTerm.map((t, idx) => `
                             <div class="p-4 bg-slate-50 rounded-xl mb-3 border border-slate-100 hover:shadow-md transition">
                                 <div class="font-bold text-slate-800 mb-1">${t.משימה}</div>
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-slate-500">
                                         <i class="fas fa-user ml-1"></i> ${t.מנהל}
                                     </span>
-                                    <button class="text-xs text-blue-600 hover:text-blue-700 font-bold">
+                                    <button onclick="editTask('${t.משימה}')" class="text-xs text-blue-600 hover:text-blue-700 font-bold hover:underline">
                                         <i class="fas fa-edit ml-1"></i> ערוך
                                     </button>
                                 </div>
@@ -282,10 +282,10 @@
                         </div>
                         
                         <div class="flex gap-2">
-                            <button class="flex-1 text-xs bg-blue-50 text-blue-600 py-2 rounded-lg font-bold hover:bg-blue-100 transition">
+                            <button onclick="showDonorsList('${book.name}')" class="flex-1 text-xs bg-blue-50 text-blue-600 py-2 rounded-lg font-bold hover:bg-blue-100 transition">
                                 <i class="fas fa-users ml-1"></i> תורמים
                             </button>
-                            <button class="flex-1 text-xs bg-slate-50 text-slate-600 py-2 rounded-lg font-bold hover:bg-slate-100 transition">
+                            <button onclick="showBookDetails('${book.name}')" class="flex-1 text-xs bg-slate-50 text-slate-600 py-2 rounded-lg font-bold hover:bg-slate-100 transition">
                                 <i class="fas fa-chart-line ml-1"></i> פרטים
                             </button>
                         </div>
@@ -335,7 +335,7 @@
                                             </span>
                                         </td>
                                         <td class="py-4 text-left">
-                                            <button class="text-blue-600 hover:text-blue-700 text-xs font-bold ml-2">
+                                            <button onclick="sendThankYou('${d.שם}')" class="text-blue-600 hover:text-blue-700 text-xs font-bold ml-2 hover:underline">
                                                 <i class="fas fa-envelope ml-1"></i> שלח תודה
                                             </button>
                                         </td>
@@ -435,7 +435,7 @@
                                             </span>
                                         </td>
                                         <td class="py-4 text-left">
-                                            <button class="text-green-600 hover:text-green-700 text-xs font-bold">
+                                            <button onclick="markAsPaid('${e.ספק}')" class="text-green-600 hover:text-green-700 text-xs font-bold hover:underline">
                                                 <i class="fas fa-check ml-1"></i> סמן כשולם
                                             </button>
                                         </td>
@@ -446,6 +446,54 @@
                     </div>
                 </div>
             `;
+        }
+
+        function markAsPaid(supplier) {
+            if (confirm(`האם לסמן את החוב ל-${supplier} כשולם?`)) {
+                store.expenses = store.expenses.filter(e => e.ספק !== supplier);
+                switchTab('expenses');
+                showNotification(`החוב ל-${supplier} סומן כשולם!`);
+            }
+        }
+
+        function sendThankYou(donorName) {
+            if (confirm(`האם לשלוח מייל תודה ל${donorName}?`)) {
+                showNotification(`נשלח מייל תודה ל${donorName}!`);
+            }
+        }
+
+        function showDonorsList(bookName) {
+            const relevantDonors = store.donors.filter(d => d.פרויקט === bookName);
+            if (relevantDonors.length === 0) {
+                alert(`אין עדיין תורמים רשומים לספר "${bookName}"`);
+            } else {
+                const donorsList = relevantDonors.map(d => `• ${d.שם} - ${d.מתנה}`).join('\n');
+                alert(`תורמים לספר "${bookName}":\n\n${donorsList}`);
+            }
+        }
+
+        function showBookDetails(bookName) {
+            showNotification(`טוען פרטים עבור "${bookName}"...`);
+        }
+
+        function completeTask(taskName) {
+            if (confirm(`האם לסמן את המשימה "${taskName}" כבוצעה?`)) {
+                store.tasks = store.tasks.filter(t => t.משימה !== taskName);
+                switchTab('tasks');
+                showNotification('המשימה סומנה כבוצעה!');
+            }
+        }
+
+        function editTask(taskName) {
+            const task = store.tasks.find(t => t.משימה === taskName);
+            if (task) {
+                const newName = prompt('ערוך את המשימה:', task.משימה);
+                if (newName && newName.trim()) {
+                    task.משימה = newName.trim();
+                    switchTab('tasks');
+                    showNotification('המשימה עודכנה!');
+                }
+            }
         }
 
         function submitTask() {
