@@ -13,6 +13,8 @@
         .sidebar-item:hover { @apply bg-slate-700 text-white; }
         .active-tab { @apply bg-blue-600 text-white shadow-lg; }
         .card { @apply bg-white p-6 rounded-2xl shadow-sm border border-slate-200; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
@@ -24,12 +26,24 @@
         </div>
         
         <nav class="flex-1 space-y-1 overflow-y-auto">
-            <div onclick="switchTab('tasks')" id="tab-tasks" class="sidebar-item active-tab"><i class="fas fa-tasks ml-3"></i> משימות וביצוע</div>
-            <div onclick="switchTab('books-he')" id="tab-books-he" class="sidebar-item"><i class="fas fa-book ml-3"></i> ספרים - עברית</div>
-            <div onclick="switchTab('books-en')" id="tab-books-en" class="sidebar-item"><i class="fas fa-language ml-3"></i> מדור אנגלית</div>
-            <div onclick="switchTab('donors')" id="tab-donors" class="sidebar-item"><i class="fas fa-heart ml-3"></i> גיוס ותורמים</div>
-            <div onclick="switchTab('logistics')" id="tab-logistics" class="sidebar-item"><i class="fas fa-globe ml-3"></i> הפצה וחו"ל</div>
-            <div onclick="switchTab('expenses')" id="tab-expenses" class="sidebar-item"><i class="fas fa-shekel-sign ml-3"></i> חובות וספקים</div>
+            <div onclick="switchTab('tasks')" id="tab-tasks" class="sidebar-item active-tab">
+                <i class="fas fa-tasks ml-3"></i> משימות וביצוע
+            </div>
+            <div onclick="switchTab('books-he')" id="tab-books-he" class="sidebar-item">
+                <i class="fas fa-book ml-3"></i> ספרים - עברית
+            </div>
+            <div onclick="switchTab('books-en')" id="tab-books-en" class="sidebar-item">
+                <i class="fas fa-language ml-3"></i> מדור אנגלית
+            </div>
+            <div onclick="switchTab('donors')" id="tab-donors" class="sidebar-item">
+                <i class="fas fa-heart ml-3"></i> גיוס ותורמים
+            </div>
+            <div onclick="switchTab('logistics')" id="tab-logistics" class="sidebar-item">
+                <i class="fas fa-globe ml-3"></i> הפצה וחו"ל
+            </div>
+            <div onclick="switchTab('expenses')" id="tab-expenses" class="sidebar-item">
+                <i class="fas fa-shekel-sign ml-3"></i> חובות וספקים
+            </div>
         </nav>
 
         <div class="p-4 bg-slate-800 rounded-xl mt-4">
@@ -43,58 +57,97 @@
             <h2 id="view-title" class="text-lg font-bold text-slate-800 italic">משימות לפי חודש ודחיפות</h2>
             <div class="flex gap-3">
                 <button onclick="showAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition">
-                    <i class="fas fa-plus ml-2"></i> משימה / מנהל
+                    <i class="fas fa-plus ml-2"></i> משימה חדשה
                 </button>
-                <button onclick="fetchData()" class="bg-slate-100 p-2 rounded-lg text-slate-500 hover:bg-slate-200 transition">
+                <button onclick="refreshData()" class="bg-slate-100 p-2 rounded-lg text-slate-500 hover:bg-slate-200 transition">
                     <i class="fas fa-sync-alt" id="loader-icon"></i>
                 </button>
             </div>
         </header>
 
         <div id="main-content" class="p-8 overflow-y-auto h-full">
-            <div id="loading-state" class="flex flex-col items-center justify-center h-full space-y-4">
-                <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-slate-500 italic">מעבד נתונים מהשיטס...</p>
-            </div>
-            <div id="dynamic-content" class="hidden space-y-6"></div>
+            <div id="dynamic-content" class="space-y-6"></div>
         </div>
     </main>
 
+    <!-- Modal -->
     <div id="modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 id="modal-title" class="text-xl font-bold mb-6 italic">הוספה למערכת</h3>
+            <h3 id="modal-title" class="text-xl font-bold mb-6 italic">הוספת משימה חדשה</h3>
             <div id="modal-body" class="space-y-4">
-                <input id="in-name" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500" placeholder="תיאור המשימה / שם">
-                <select id="in-type" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none">
-                    <option value="task">משימה חדשה</option>
-                    <option value="manager">הוספת מנהל ביצוע</option>
-                </select>
-                <select id="in-urgency" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none">
-                    <option value="רגילה">דחיפות רגילה</option>
-                    <option value="גבוהה">דחיפות גבוהה</option>
-                </select>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-slate-600">תיאור המשימה</label>
+                    <input id="in-name" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500" placeholder="לדוגמה: שליחת ספרים לתורם">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-slate-600">מנהל ביצוע</label>
+                    <select id="in-manager" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500">
+                        <option value="משה">משה</option>
+                        <option value="יוסי">יוסי</option>
+                        <option value="דוד">דוד</option>
+                        <option value="אחר">אחר</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-slate-600">דחיפות</label>
+                    <select id="in-urgency" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500">
+                        <option value="רגילה">רגילה</option>
+                        <option value="גבוהה">גבוהה - דחוף!</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-slate-600">טווח זמן</label>
+                    <select id="in-timeframe" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500">
+                        <option value="חודשי">חודשי</option>
+                        <option value="ארוך">טווח ארוך</option>
+                    </select>
+                </div>
             </div>
             <div class="mt-8 flex justify-end gap-3">
-                <button onclick="hideModal()" class="px-6 py-2 text-slate-500 font-bold">ביטול</button>
-                <button onclick="submitToSheets()" id="btn-submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold shadow-lg">שמור במערכת</button>
+                <button onclick="hideModal()" class="px-6 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-lg transition">ביטול</button>
+                <button onclick="submitTask()" id="btn-submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg transition">
+                    <i class="fas fa-save ml-2"></i> שמור
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby1P8oLUUl-YSfsIk-DEcPRD8cHqAwjgXna37nKk8f8GVIT8_QpzSnrNxkrCKMyJPErJQ/exec";
-        let store = {};
+        // נתונים לוקאליים (demo mode)
+        let store = {
+            tasks: [
+                { משימה: "הכנת חשבונות לתורמים חודש זה", מנהל: "משה", דחיפות: "גבוהה", טווח: "חודשי" },
+                { משימה: "שליחת עדכון למנויי הניוזלטר", מנהל: "יוסי", דחיפות: "גבוהה", טווח: "חודשי" },
+                { משימה: "תיאום פגישת תכנון לשנה הבאה", מנהל: "דוד", דחיפות: "רגילה", טווח: "ארוך" },
+                { משימה: "עדכון אתר האינטרנט", מנהל: "משה", דחיפות: "רגילה", טווח: "ארוך" },
+                { משימה: "סיום עריכה ספר החינוך", מנהל: "יוסי", דחיפות: "גבוהה", טווח: "חודשי" }
+            ],
+            donors: [
+                { שם: "אברהם כהן", פרויקט: "יסודות החינוך", מתנה: "₪5,000" },
+                { שם: "שרה לוי", פרויקט: "שידוכים", מתנה: "₪3,500" },
+                { שם: "יעקב גרינברג", פרויקט: "מודעות", מתנה: "₪7,200" },
+                { שם: "רחל שוורץ", פרויקט: "כמים", מתנה: "₪2,800" }
+            ],
+            expenses: [
+                { ספק: "דפוס מרכז", סכום: "12,500" },
+                { ספק: "משרד - שכירות חודשית", סכום: "1,000" },
+                { ספק: "גמ״ח הספרים", סכום: "8,300" },
+                { ספק: "שליחויות בינ״ל", סכום: "4,200" }
+            ]
+        };
 
-        async function fetchData() {
-            document.getElementById('loader-icon').classList.add('animate-spin');
-            try {
-                const res = await fetch(API_URL + "?action=getData");
-                store = await res.json();
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('dynamic-content').classList.remove('hidden');
-                switchTab('tasks');
-            } catch (e) { alert("בעיה בחיבור. בדוק הרשאות ב-Apps Script."); }
-            document.getElementById('loader-icon').classList.remove('animate-spin');
+        function refreshData() {
+            const icon = document.getElementById('loader-icon');
+            icon.classList.add('animate-spin');
+            setTimeout(() => {
+                icon.classList.remove('animate-spin');
+                switchTab(getCurrentTab());
+            }, 500);
+        }
+
+        function getCurrentTab() {
+            const active = document.querySelector('.active-tab');
+            return active.id.replace('tab-', '');
         }
 
         function switchTab(tabId) {
@@ -102,6 +155,10 @@
             document.getElementById('tab-' + tabId).classList.add('active-tab');
             const el = document.getElementById('dynamic-content');
             const title = document.getElementById('view-title');
+
+            el.classList.remove('fade-in');
+            void el.offsetWidth; // trigger reflow
+            el.classList.add('fade-in');
 
             if(tabId === 'tasks') {
                 title.innerText = "משימות לפי חודש וטווח ארוך";
@@ -113,6 +170,9 @@
             } else if(tabId === 'donors') {
                 title.innerText = "גיוס כספים ותורמים אקטואליים";
                 renderDonors(el);
+            } else if(tabId === 'logistics') {
+                title.innerText = "הפצה בארץ ובחו״ל";
+                renderLogistics(el);
             } else if(tabId === 'expenses') {
                 title.innerText = "חובות לספקים ועלויות שוטפות";
                 renderExpenses(el);
@@ -122,85 +182,325 @@
         function renderTasks(el) {
             const tasks = store.tasks || [];
             const high = tasks.filter(t => t.דחיפות === 'גבוהה');
+            const longTerm = tasks.filter(t => t.טווח === 'ארוך');
+            
             el.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="card border-r-4 border-red-500">
-                        <h4 class="font-bold text-red-600 mb-4">דחוף לביצוע מידי (חודשי)</h4>
-                        ${high.map(t => `<div class="p-3 bg-red-50 rounded-lg mb-2 text-sm"><strong>${t.משימה}</strong> <br><span class="text-[10px] opacity-60">אחראי: ${t.מנהל}</span></div>`).join('')}
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-bold text-red-600 text-lg">🔥 דחוף לביצוע מידי</h4>
+                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">${high.length} משימות</span>
+                        </div>
+                        ${high.length === 0 ? '<p class="text-slate-400 italic text-sm">אין משימות דחופות כרגע</p>' : ''}
+                        ${high.map(t => `
+                            <div class="p-4 bg-red-50 rounded-xl mb-3 border border-red-100 hover:shadow-md transition">
+                                <div class="font-bold text-slate-800 mb-1">${t.משימה}</div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-slate-500">
+                                        <i class="fas fa-user ml-1"></i> ${t.מנהל}
+                                    </span>
+                                    <button class="text-xs text-red-600 hover:text-red-700 font-bold">
+                                        <i class="fas fa-check ml-1"></i> סמן כבוצע
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
+                    
                     <div class="card border-r-4 border-slate-400">
-                        <h4 class="font-bold text-slate-600 mb-4">משימות לטווח ארוך</h4>
-                        ${tasks.filter(t => t.טווח === 'ארוך').map(t => `<div class="p-3 bg-slate-50 rounded-lg mb-2 text-sm">${t.משימה}</div>`).join('')}
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-bold text-slate-600 text-lg">📅 משימות לטווח ארוך</h4>
+                            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">${longTerm.length} משימות</span>
+                        </div>
+                        ${longTerm.length === 0 ? '<p class="text-slate-400 italic text-sm">אין משימות לטווח ארוך</p>' : ''}
+                        ${longTerm.map(t => `
+                            <div class="p-4 bg-slate-50 rounded-xl mb-3 border border-slate-100 hover:shadow-md transition">
+                                <div class="font-bold text-slate-800 mb-1">${t.משימה}</div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-slate-500">
+                                        <i class="fas fa-user ml-1"></i> ${t.מנהל}
+                                    </span>
+                                    <button class="text-xs text-blue-600 hover:text-blue-700 font-bold">
+                                        <i class="fas fa-edit ml-1"></i> ערוך
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                </div>`;
+                </div>
+                
+                <div class="card bg-gradient-to-l from-blue-50 to-white border-r-4 border-blue-500">
+                    <h4 class="font-bold text-blue-600 mb-3">📊 סטטיסטיקה</h4>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-slate-800">${tasks.length}</div>
+                            <div class="text-xs text-slate-500 mt-1">סה״כ משימות</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-red-600">${high.length}</div>
+                            <div class="text-xs text-slate-500 mt-1">דחופות</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-600">${longTerm.length}</div>
+                            <div class="text-xs text-slate-500 mt-1">טווח ארוך</div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function renderBooks(el, lang) {
             const list = lang === 'עברית' 
-                ? ['יסודות החינוך', 'מודעות', 'שידוכים', 'על הפחד', 'המחונך', 'כמים']
-                : ['מודעות', 'שידוכים', 'יסודות החינוך', 'כמים', 'המחונך'];
+                ? [
+                    { name: 'יסודות החינוך', progress: 65, target: 50000, raised: 32500 },
+                    { name: 'מודעות', progress: 82, target: 40000, raised: 32800 },
+                    { name: 'שידוכים', progress: 45, target: 35000, raised: 15750 },
+                    { name: 'על הפחד', progress: 28, target: 30000, raised: 8400 },
+                    { name: 'המחונך', progress: 90, target: 25000, raised: 22500 },
+                    { name: 'כמים', progress: 55, target: 45000, raised: 24750 }
+                ]
+                : [
+                    { name: 'Awareness (מודעות)', progress: 70, target: 60000, raised: 42000 },
+                    { name: 'Shidduchim (שידוכים)', progress: 40, target: 50000, raised: 20000 },
+                    { name: 'Foundations of Education', progress: 55, target: 55000, raised: 30250 },
+                    { name: 'Like Water (כמים)', progress: 35, target: 40000, raised: 14000 }
+                ];
             
-            el.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                ${list.map(name => `
-                    <div class="card border-t-4 border-blue-600">
-                        <h4 class="font-bold text-lg mb-3 italic">${name}</h4>
-                        <div class="text-[10px] text-slate-400 mb-4 uppercase">מצב גיוס כספים</div>
-                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-4">
-                            <div class="bg-emerald-500 h-full w-[45%]"></div>
+            el.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${list.map(book => `
+                    <div class="card border-t-4 border-blue-600 hover:shadow-xl transition">
+                        <h4 class="font-bold text-lg mb-2 italic text-slate-800">${book.name}</h4>
+                        <div class="text-[10px] text-slate-400 mb-3 uppercase tracking-wide">מצב גיוס כספים</div>
+                        
+                        <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden mb-3">
+                            <div class="bg-gradient-to-l from-emerald-400 to-emerald-600 h-full transition-all duration-500" style="width: ${book.progress}%"></div>
                         </div>
-                        <div class="flex justify-between text-[10px] font-bold">
-                            <button class="text-blue-600 underline">רשימת תורמים</button>
-                            <span class="text-slate-400">יעד: ₪50,000</span>
+                        
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm font-bold text-emerald-600">₪${book.raised.toLocaleString()}</span>
+                            <span class="text-xs text-slate-400">יעד: ₪${book.target.toLocaleString()}</span>
                         </div>
-                    </div>`).join('')}
+                        
+                        <div class="flex gap-2">
+                            <button class="flex-1 text-xs bg-blue-50 text-blue-600 py-2 rounded-lg font-bold hover:bg-blue-100 transition">
+                                <i class="fas fa-users ml-1"></i> תורמים
+                            </button>
+                            <button class="flex-1 text-xs bg-slate-50 text-slate-600 py-2 rounded-lg font-bold hover:bg-slate-100 transition">
+                                <i class="fas fa-chart-line ml-1"></i> פרטים
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
             </div>`;
         }
 
         function renderDonors(el) {
+            const donors = store.donors || [];
+            const total = donors.reduce((sum, d) => sum + parseInt(d.מתנה.replace(/[^\d]/g, '')), 0);
+            
             el.innerHTML = `
+                <div class="card bg-gradient-to-l from-emerald-50 to-white border-r-4 border-emerald-500 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-emerald-600 mb-1">💰 סה״כ תרומות החודש</h4>
+                            <div class="text-3xl font-bold text-slate-800">₪${total.toLocaleString()}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-emerald-600">${donors.length}</div>
+                            <div class="text-xs text-slate-500">תורמים</div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="card">
-                    <h4 class="font-bold mb-4 italic italic">תורמים אקטואליים ושיווק לפרויקטים</h4>
-                    <table class="w-full text-right text-sm">
-                        <tr class="text-slate-400 border-b italic"><th class="pb-2">שם תורם</th><th class="pb-2">פרויקט</th><th class="pb-2">מתנה</th></tr>
-                        ${(store.donors || []).map(d => `<tr class="border-b"><td class="py-3 font-bold">${d.שם}</td><td class="py-3">${d.פרויקט}</td><td class="py-3 text-xs italic text-blue-600">${d.מתנה}</td></tr>`).join('')}
-                    </table>
-                </div>`;
+                    <h4 class="font-bold mb-4 italic text-lg">רשימת תורמים אקטואליים</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-sm">
+                            <thead>
+                                <tr class="text-slate-400 border-b-2 border-slate-200">
+                                    <th class="pb-3 font-bold">שם תורם</th>
+                                    <th class="pb-3 font-bold">פרויקט</th>
+                                    <th class="pb-3 font-bold text-left">סכום</th>
+                                    <th class="pb-3 font-bold text-left">פעולות</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${donors.map(d => `
+                                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                                        <td class="py-4 font-bold text-slate-800">${d.שם}</td>
+                                        <td class="py-4 text-slate-600">${d.פרויקט}</td>
+                                        <td class="py-4 text-left">
+                                            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">
+                                                ${d.מתנה}
+                                            </span>
+                                        </td>
+                                        <td class="py-4 text-left">
+                                            <button class="text-blue-600 hover:text-blue-700 text-xs font-bold ml-2">
+                                                <i class="fas fa-envelope ml-1"></i> שלח תודה
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLogistics(el) {
+            el.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card border-r-4 border-blue-500">
+                        <h4 class="font-bold text-blue-600 mb-4 text-lg">🇮🇱 הפצה בארץ</h4>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-blue-50 rounded-lg flex justify-between items-center">
+                                <span class="font-bold">ירושלים</span>
+                                <span class="text-xs bg-blue-600 text-white px-3 py-1 rounded-full">350 ספרים</span>
+                            </div>
+                            <div class="p-3 bg-blue-50 rounded-lg flex justify-between items-center">
+                                <span class="font-bold">בני ברק</span>
+                                <span class="text-xs bg-blue-600 text-white px-3 py-1 rounded-full">280 ספרים</span>
+                            </div>
+                            <div class="p-3 bg-blue-50 rounded-lg flex justify-between items-center">
+                                <span class="font-bold">צפת</span>
+                                <span class="text-xs bg-blue-600 text-white px-3 py-1 rounded-full">120 ספרים</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card border-r-4 border-purple-500">
+                        <h4 class="font-bold text-purple-600 mb-4 text-lg">🌍 הפצה בחו״ל</h4>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-purple-50 rounded-lg flex justify-between items-center">
+                                <span class="font-bold">ארה״ב</span>
+                                <span class="text-xs bg-purple-600 text-white px-3 py-1 rounded-full">500 ספרים</span>
+                            </div>
+                            <div class="p-3 bg-purple-50 rounded-lg flex justify-between items-center">
+                                <span class="font-bold">אנגליה</span>
+                                <span class="text-xs bg-purple-600 text-white px-3 py-1 rounded-full">180 ספרים</span>
+                            </div>
+                            <div class="p-3 bg-purple-50 rounded-lg flex justify-between items-center">
+                                <span class="font-bold">צרפת</span>
+                                <span class="text-xs bg-purple-600 text-white px-3 py-1 rounded-full">95 ספרים</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function renderExpenses(el) {
+            const expenses = store.expenses || [];
+            const total = expenses.reduce((sum, e) => sum + parseInt(e.סכום.replace(/,/g, '')), 0);
+            
             el.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="card text-center"><p class="text-[10px] text-slate-400 uppercase">משרד (חודשי)</p><h3 class="text-2xl font-bold mt-1 italic">₪1,000</h3></div>
-                    <div class="card text-center"><p class="text-[10px] text-slate-400 uppercase">חניה</p><h3 class="text-2xl font-bold mt-1 italic">₪450</h3></div>
-                    <div class="card text-center"><p class="text-[10px] text-slate-400 uppercase">רכב</p><h3 class="text-2xl font-bold mt-1 italic">₪1,500</h3></div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="card text-center bg-gradient-to-b from-slate-50 to-white">
+                        <p class="text-[10px] text-slate-400 uppercase mb-2">משרד (חודשי)</p>
+                        <h3 class="text-2xl font-bold italic text-slate-800">₪1,000</h3>
+                    </div>
+                    <div class="card text-center bg-gradient-to-b from-slate-50 to-white">
+                        <p class="text-[10px] text-slate-400 uppercase mb-2">חניה</p>
+                        <h3 class="text-2xl font-bold italic text-slate-800">₪450</h3>
+                    </div>
+                    <div class="card text-center bg-gradient-to-b from-slate-50 to-white">
+                        <p class="text-[10px] text-slate-400 uppercase mb-2">רכב</p>
+                        <h3 class="text-2xl font-bold italic text-slate-800">₪1,500</h3>
+                    </div>
+                    <div class="card text-center bg-gradient-to-b from-red-50 to-white border-2 border-red-200">
+                        <p class="text-[10px] text-red-400 uppercase mb-2">סה״כ חובות</p>
+                        <h3 class="text-2xl font-bold italic text-red-600">₪${total.toLocaleString()}</h3>
+                    </div>
                 </div>
+                
                 <div class="card">
-                    <h4 class="font-bold mb-4 italic">חובות לספקים וגמ"חים</h4>
-                    <table class="w-full text-right text-sm">
-                        ${(store.expenses || []).map(e => `<tr class="border-b"><td class="py-3">${e.ספק}</td><td class="py-3 font-bold text-red-600">₪${e.סכום}</td></tr>`).join('')}
-                    </table>
-                </div>`;
+                    <h4 class="font-bold mb-4 italic text-lg">חובות לספקים וגמ״חים</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-sm">
+                            <thead>
+                                <tr class="text-slate-400 border-b-2 border-slate-200">
+                                    <th class="pb-3 font-bold">ספק</th>
+                                    <th class="pb-3 font-bold text-left">סכום</th>
+                                    <th class="pb-3 font-bold text-left">פעולות</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${expenses.map(e => `
+                                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                                        <td class="py-4 font-bold text-slate-800">${e.ספק}</td>
+                                        <td class="py-4 text-left">
+                                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">
+                                                ₪${e.סכום}
+                                            </span>
+                                        </td>
+                                        <td class="py-4 text-left">
+                                            <button class="text-green-600 hover:text-green-700 text-xs font-bold">
+                                                <i class="fas fa-check ml-1"></i> סמן כשולם
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
         }
 
-        async function submitToSheets() {
-            const btn = document.getElementById('btn-submit');
-            btn.disabled = true; btn.innerText = "שומר...";
-            const payload = {
-                type: document.getElementById('in-type').value,
-                name: document.getElementById('in-name').value,
-                urgency: document.getElementById('in-urgency').value
-            };
-            try {
-                await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                alert("בוצע! הנתון נוסף לשיטס.");
-                hideModal(); fetchData();
-            } catch (e) { alert("שגיאה בשמירה."); }
-            btn.disabled = false; btn.innerText = "שמור במערכת";
+        function submitTask() {
+            const name = document.getElementById('in-name').value;
+            const manager = document.getElementById('in-manager').value;
+            const urgency = document.getElementById('in-urgency').value;
+            const timeframe = document.getElementById('in-timeframe').value;
+            
+            if (!name.trim()) {
+                alert('יש להזין תיאור משימה');
+                return;
+            }
+            
+            // הוספה לנתונים המקומיים
+            store.tasks.push({
+                משימה: name,
+                מנהל: manager,
+                דחיפות: urgency,
+                טווח: timeframe
+            });
+            
+            // ניקוי הטופס
+            document.getElementById('in-name').value = '';
+            hideModal();
+            
+            // רענון התצוגה
+            switchTab('tasks');
+            
+            // הודעת הצלחה
+            showNotification('המשימה נוספה בהצלחה!');
         }
 
-        function showAddModal() { document.getElementById('modal').classList.remove('hidden'); }
-        function hideModal() { document.getElementById('modal').classList.add('hidden'); }
-        window.onload = fetchData;
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce';
+            notification.innerHTML = `<i class="fas fa-check-circle ml-2"></i>${message}`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function showAddModal() { 
+            document.getElementById('modal').classList.remove('hidden'); 
+        }
+        
+        function hideModal() { 
+            document.getElementById('modal').classList.add('hidden'); 
+        }
+
+        // טעינה ראשונית
+        window.onload = () => {
+            switchTab('tasks');
+        };
     </script>
 </body>
 </html>
