@@ -3,144 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מכון רב הופמן - מערכת ניהול</title>
+    <title>מערכת ניהול - מכון רב הופמן</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&display=swap');
-        body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
-        .nav-active { background-color: #1e293b; border-right: 4px solid #3b82f6; color: white; }
+        body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .sidebar-link { transition: all 0.2s; border-radius: 0.5rem; margin-bottom: 0.25rem; display: flex; align-items: center; padding: 0.75rem 1rem; }
+        .sidebar-link:hover { background-color: #334155; color: white; }
+        .sidebar-link.active { background-color: #3b82f6; color: white; }
+        .card { background: white; border-radius: 1rem; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); padding: 1.5rem; }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="flex h-screen overflow-hidden">
 
-    <aside class="w-64 bg-slate-800 text-slate-300 flex-shrink-0 flex flex-col shadow-2xl">
-        <div class="p-6 text-white text-2xl font-bold border-b border-slate-700 text-center">
-            מכון רב הופמן
-            <div class="text-xs font-light text-slate-400 mt-1 uppercase tracking-widest">Management System</div>
+    <aside class="w-72 bg-slate-800 text-slate-300 flex flex-col shadow-2xl z-20 overflow-y-auto">
+        <div class="p-6 border-b border-slate-700">
+            <h1 class="text-white text-xl font-bold tracking-tight">מכון רב הופמן</h1>
+            <p class="text-xs text-slate-400 mt-1 uppercase">ניהול והוצאה לאור</p>
         </div>
-        <nav class="flex-1 mt-4 space-y-1">
-            <button onclick="switchTab('dashboard')" class="nav-item w-full text-right py-3 px-6 hover:bg-slate-700 transition flex items-center"><i class="fas fa-chart-pie ml-3"></i> דשבורד מרכזי</button>
-            <button onclick="switchTab('tasks')" class="nav-item w-full text-right py-3 px-6 hover:bg-slate-700 transition flex items-center"><i class="fas fa-list-check ml-3"></i> משימות ולו"ז</button>
-            <button onclick="switchTab('books')" class="nav-item w-full text-right py-3 px-6 hover:bg-slate-700 transition flex items-center"><i class="fas fa-book-open ml-3"></i> מערך הספרים</button>
-            <button onclick="switchTab('donors')" class="nav-item w-full text-right py-3 px-6 hover:bg-slate-700 transition flex items-center"><i class="fas fa-heart ml-3"></i> גיוס כספים</button>
-            <button onclick="switchTab('logistics')" class="nav-item w-full text-right py-3 px-6 hover:bg-slate-700 transition flex items-center"><i class="fas fa-globe ml-3"></i> הפצה וחו"ל</button>
-            <button onclick="switchTab('expenses')" class="nav-item w-full text-right py-3 px-6 hover:bg-slate-700 transition flex items-center"><i class="fas fa-shekel-sign ml-3"></i> חובות וספקים</button>
+        
+        <nav class="flex-1 p-4 space-y-1">
+            <div class="text-[10px] font-bold text-slate-500 px-4 mb-2 uppercase">ניהול שוטף</div>
+            <button onclick="switchTab('tasks')" class="nav-item sidebar-link w-full text-right active" id="btn-tasks">
+                <i class="fas fa-list-ul ml-3"></i> משימות ולו"ז
+            </button>
+            <button onclick="switchTab('staff')" class="nav-item sidebar-link w-full text-right" id="btn-staff">
+                <i class="fas fa-users ml-3"></i> עובדי המכון
+            </button>
+            
+            <div class="text-[10px] font-bold text-slate-500 px-4 mt-6 mb-2 uppercase">מערך הספרים</div>
+            <button onclick="switchTab('books-he')" class="nav-item sidebar-link w-full text-right" id="btn-books-he">
+                <i class="fas fa-book ml-3"></i> ספרים - עברית
+            </button>
+            <button onclick="switchTab('books-en')" class="nav-item sidebar-link w-full text-right" id="btn-books-en">
+                <i class="fas fa-language ml-3"></i> מדור אנגלית
+            </button>
+            <button onclick="switchTab('printing')" class="nav-item sidebar-link w-full text-right" id="btn-printing">
+                <i class="fas fa-print ml-3"></i> מערך הדפסה
+            </button>
+
+            <div class="text-[10px] font-bold text-slate-500 px-4 mt-6 mb-2 uppercase">כספים ולוגיסטיקה</div>
+            <button onclick="switchTab('donors')" class="nav-item sidebar-link w-full text-right" id="btn-donors">
+                <i class="fas fa-hand-holding-heart ml-3"></i> גיוס כספים
+            </button>
+            <button onclick="switchTab('logistics')" class="nav-item sidebar-link w-full text-right" id="btn-logistics">
+                <i class="fas fa-truck-loading ml-3"></i> הפצה וחו"ל
+            </button>
+            <button onclick="switchTab('expenses')" class="nav-item sidebar-link w-full text-right" id="btn-expenses">
+                <i class="fas fa-file-invoice-dollar ml-3"></i> חובות וספקים
+            </button>
+            <button onclick="switchTab('lectures')" class="nav-item sidebar-link w-full text-right" id="btn-lectures">
+                <i class="fas fa-microphone ml-3"></i> מערך הרצאות
+            </button>
         </nav>
-        <div class="p-4 bg-slate-900 text-xs flex items-center justify-between">
-            <span>שלום, <strong>ביינוש</strong></span>
-            <span class="text-green-500 text-[10px]"><i class="fas fa-circle"></i> Online</span>
+
+        <div class="p-4 bg-slate-900 border-t border-slate-700">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">מש</div>
+                <div>
+                    <p class="text-xs font-bold text-white">מאיר שמחה שטיין</p>
+                    <p class="text-[10px] text-slate-400">בעלות העמותה</p>
+                </div>
+            </div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="bg-white p-4 shadow-sm border-b flex justify-between items-center z-10">
-            <h1 id="page-title" class="text-xl font-bold text-slate-700 italic">דשבורד מרכזי</h1>
-            <div class="flex gap-2">
-                <button onclick="showModal('task')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm flex items-center shadow-md"><i class="fas fa-plus ml-2"></i> משימה</button>
-                <button onclick="showModal('manager')" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm flex items-center shadow-md"><i class="fas fa-user-plus ml-2"></i> מנהל</button>
-                <button onclick="fetchData()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-lg transition"><i class="fas fa-sync-alt"></i></button>
+    <main class="flex-1 flex flex-col min-w-0">
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
+            <h2 id="current-tab-title" class="text-lg font-bold text-slate-800">משימות לפי חודש ודחיפות</h2>
+            <div class="flex space-x-3 space-x-reverse">
+                <button onclick="showModal('task')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition">
+                    <i class="fas fa-plus ml-2"></i> משימה חדשה
+                </button>
+                <button onclick="fetchData()" class="bg-slate-100 p-2 rounded-lg text-slate-500 hover:bg-slate-200 transition">
+                    <i class="fas fa-sync-alt" id="refresh-icon"></i>
+                </button>
             </div>
         </header>
 
-        <section class="p-8 overflow-y-auto flex-1">
+        <div id="main-area" class="p-8 overflow-y-auto h-full">
             <div id="loader" class="flex flex-col items-center justify-center h-full space-y-4">
-                <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-slate-500 animate-pulse">מתחבר למסד הנתונים של המכון...</p>
+                <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-slate-500 font-medium">מושך נתונים מהמכון...</p>
             </div>
-            
-            <div id="main-content" class="hidden animate-in fade-in duration-500">
-                </div>
-        </section>
+            <div id="tab-content" class="hidden space-y-6"></div>
+        </div>
     </main>
 
-    <div id="modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 id="modal-title" class="text-xl font-bold mb-6 text-slate-800">הוספה למערכת</h3>
-            <div class="space-y-4">
-                <input type="text" id="modal-input" class="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-blue-500 outline-none transition" placeholder="תיאור המשימה או שם המנהל">
-                <div id="modal-extra-fields"></div>
+    <div id="modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-6 border-b">
+                <h3 id="modal-title" class="text-xl font-bold">הוספת נתונים</h3>
             </div>
-            <div class="flex justify-end gap-3 mt-8">
-                <button onclick="hideModal()" class="px-6 py-2 text-slate-500 hover:bg-slate-50 rounded-lg">ביטול</button>
-                <button onclick="saveData()" class="px-6 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700">שמור שינויים</button>
+            <div class="p-6 space-y-4">
+                <div id="modal-body" class="space-y-4"></div>
+            </div>
+            <div class="p-6 bg-slate-50 flex justify-end space-x-3 space-x-reverse">
+                <button onclick="hideModal()" class="px-6 py-2 text-slate-500 font-bold">ביטול</button>
+                <button onclick="submitData()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold shadow-lg hover:bg-blue-700">שמור במערכת</button>
             </div>
         </div>
     </div>
 
     <script>
-        // שילוב הלינק החדש שלך
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrAL5XYrhPnFQxlRXd9AlhAr_fvEbyh6HW0ZujTw3J58OhpDmRlOts-crLs73zita1Ig/exec";
-        let localData = {};
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby1P8oLUUl-YSfsIk-DEcPRD8cHqAwjgXna37nKk8f8GVIT8_QpzSnrNxkrCKMyJPErJQ/exec";
+        let store = {};
 
         async function fetchData() {
-            document.getElementById('loader').classList.remove('hidden');
-            document.getElementById('main-content').classList.add('hidden');
+            document.getElementById('refresh-icon').classList.add('animate-spin');
             try {
-                const response = await fetch(APPS_SCRIPT_URL);
-                localData = await response.json();
+                const response = await fetch(APPS_SCRIPT_URL + "?action=getData");
+                store = await response.json();
                 document.getElementById('loader').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                switchTab('dashboard');
-            } catch (err) {
-                document.getElementById('loader').innerHTML = `
-                    <div class="text-red-500 bg-red-50 p-6 rounded-xl border border-red-200 text-center">
-                        <i class="fas fa-exclamation-triangle text-3xl mb-2"></i>
-                        <p class="font-bold text-lg">שגיאה בחיבור לנתונים</p>
-                        <p class="text-sm">וודא שהפריסה בגוגל מוגדרת ל-'Anyone' ושבוצעה פריסה חדשה.</p>
-                    </div>
-                `;
+                document.getElementById('tab-content').classList.remove('hidden');
+                switchTab('tasks');
+            } catch (e) {
+                alert("שגיאה בחיבור לנתונים. וודא שהפריסה בגוגל תקינה.");
+            }
+            document.getElementById('refresh-icon').classList.remove('animate-spin');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('btn-' + tabId).classList.add('active');
+            
+            const content = document.getElementById('tab-content');
+            const title = document.getElementById('current-tab-title');
+            
+            if(tabId === 'tasks') {
+                title.innerText = "משימות לפי חודש וטווח ארוך";
+                renderTasks(content);
+            } else if(tabId === 'books-he') {
+                title.innerText = "ניהול ספרי המכון - עברית";
+                renderBooks(content, 'עברית');
+            } else if(tabId === 'books-en') {
+                title.innerText = "מדור אנגלית - International";
+                renderBooks(content, 'אנגלית');
+            } else if(tabId === 'expenses') {
+                title.innerText = "חובות לספקים ועלויות שוטפות";
+                renderExpenses(content);
+            } else if(tabId === 'logistics') {
+                title.innerText = "דשבורד הפצה ואספקה חו\"ל";
+                renderLogistics(content);
             }
         }
 
-        function switchTab(tab) {
-            const container = document.getElementById('main-content');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
-            // הצביעה תעבוד לפי שם הטאב
-            
-            if (tab === 'dashboard') renderDashboard(container);
-            if (tab === 'tasks') renderTasks(container);
-            if (tab === 'books') renderBooks(container);
-        }
+        function renderTasks(el) {
+            const tasks = store.tasks || [];
+            const high = tasks.filter(t => t.דחיפות === 'גבוהה');
+            const long = tasks.filter(t => t.סוג === 'טווח ארוך');
 
-        function renderDashboard(el) {
-            document.getElementById('page-title').innerText = "דשבורד מכון רב הופמן";
             el.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border-r-4 border-blue-600">
-                        <p class="text-slate-400 text-xs">משימות בביצוע</p>
-                        <h4 class="text-2xl font-bold text-slate-800">${(localData.tasks || []).length}</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card border-r-4 border-red-500">
+                        <h4 class="font-bold text-red-600 mb-4">דחוף לביצוע מידי</h4>
+                        ${high.map(t => `<div class="p-3 bg-red-50 rounded-lg mb-2 text-sm"><strong>${t.משימה}</strong> <br> <span class="text-[10px] text-red-400">אחראי: ${t.מנהל}</span></div>`).join('')}
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border-r-4 border-emerald-500">
-                        <p class="text-slate-400 text-xs">ספרים במערך</p>
-                        <h4 class="text-2xl font-bold text-slate-800">${(localData.books || []).length}</h4>
+                    <div class="card border-r-4 border-slate-400">
+                        <h4 class="font-bold text-slate-600 mb-4">משימות לטווח ארוך</h4>
+                        ${long.map(t => `<div class="p-3 bg-slate-50 rounded-lg mb-2 text-sm">${t.משימה}</div>`).join('')}
                     </div>
                 </div>
             `;
         }
 
-        function renderTasks(el) {
-            document.getElementById('page-title').innerText = "משימות לביצוע וסטטוס";
-            let html = `<div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <table class="w-full text-right border-collapse">
-                    <thead class="bg-slate-50 text-slate-500 uppercase text-xs tracking-wider">
-                        <tr><th class="p-4 border-b">תיאור משימה</th><th class="p-4 border-b">דחיפות</th><th class="p-4 border-b text-center">מנהל</th></tr>
-                    </thead>
-                    <tbody>`;
-            (localData.tasks || []).forEach(t => {
-                const badge = t.דחיפות === 'גבוהה' ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600';
-                html += `<tr class="hover:bg-slate-50 transition">
-                    <td class="p-4 border-b font-medium">${t.משימה}</td>
-                    <td class="p-4 border-b"><span class="${badge} px-3 py-1 rounded-full text-[10px] font-bold">● ${t.דחיפות}</span></td>
-                    <td class="p-4 border-b text-center text-sm font-semibold text-slate-700">${t.מנהל}</td>
-                </tr>`;
-            });
-            el.innerHTML = html + `</tbody></table></div>`;
+        function renderBooks(el, lang) {
+            const books = (store.books || []).filter(b => b.שפה === lang);
+            el.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                ${books.map(b => `
+                    <div class="card border-t-4 border-blue-500">
+                        <h4 class="font-bold text-lg mb-1">${b.שם}</h4>
+                        <div class="text-[10px] text-slate-400 mb-4 italic">סטטוס: ${b.סטטוס}</div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs"><span>גיוס כספים:</span> <span class="font-bold">${b.גויס} / ${b.יעד} ₪</span></div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-green-500 h-full" style="width: ${(b.גויס/b.יעד*100)}%"></div>
+                            </div>
+                        </div>
+                        <button onclick="showBookDetails('${b.שם}')" class="mt-4 w-full py-2 bg-slate-50 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-50 transition">פרטי תורמים ומתנות</button>
+                    </div>
+                `).join('')}
+            </div>`;
         }
 
+        function renderExpenses(el) {
+            el.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="card text-center">
+                        <p class="text-slate-400 text-xs uppercase">משרד וחניה</p>
+                        <h2 class="text-2xl font-bold mt-1">₪1,450</h2>
+                    </div>
+                    <div class="card text-center">
+                        <p class="text-slate-400 text-xs uppercase">רכב והוצאות נלוות</p>
+                        <h2 class="text-2xl font-bold mt-1">₪1,500</h2>
+                    </div>
+                    <div class="card text-center">
+                        <p class="text-slate-400 text-xs uppercase">ספקי גוגל ומייל</p>
+                        <h2 class="text-2xl font-bold mt-1">$100</h2>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4 class="font-bold mb-4">חובות לספקים וגמ"חים</h4>
+                    <table class="w-full text-right text-sm">
+                        <tr class="text-slate-400 border-b italic font-light"><th class="pb-2">ספק/גמ"ח</th><th class="pb-2">סכום</th><th class="pb-2">תאריך</th></tr>
+                        ${(store.expenses || []).map(e => `<tr class="border-b"><td class="py-3">${e.ספק}</td><td class="py-3 font-bold text-red-600">${e.סכום} ₪</td><td class="py-3">${e.תאריך}</td></tr>`).join('')}
+                    </table>
+                </div>
+            `;
+        }
+
+        // פונקציות מודל והוספה
         function showModal(type) {
             document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal-title').innerText = type === 'task' ? 'משימה חדשה למכון' : 'הוספת מנהל ביצוע חדש';
+            const body = document.getElementById('modal-body');
+            if(type === 'task') {
+                body.innerHTML = `
+                    <input id="in-task" class="w-full p-3 border rounded-xl" placeholder="תיאור המשימה">
+                    <select id="in-urgency" class="w-full p-3 border rounded-xl">
+                        <option value="רגילה">דחיפות רגילה</option>
+                        <option value="גבוהה">דחיפות גבוהה</option>
+                    </select>
+                    <select id="in-manager" class="w-full p-3 border rounded-xl">
+                        <option>בחר מנהל ביצוע...</option>
+                        ${(store.staff || []).map(s => `<option value="${s.שם}">${s.שם} (${s.תפקיד})</option>`).join('')}
+                    </select>
+                `;
+            }
         }
 
         function hideModal() { document.getElementById('modal').classList.add('hidden'); }
