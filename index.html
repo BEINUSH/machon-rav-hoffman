@@ -61,7 +61,7 @@
   // בדיקת “ריל-טיים”: כל שינוי באוסף data יודפס ישר לקונסול
   onSnapshot(collection(db, "data"), (snap) => {
     const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    console.log("LIVE DATA:", rows);
+window.rows = rows;
   });
 </script>
 
@@ -2356,6 +2356,7 @@
 
 </body>
 </html>
+
 
 
 
