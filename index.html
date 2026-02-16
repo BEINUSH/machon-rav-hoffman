@@ -55,13 +55,34 @@
 
   };
 
-  const app = initializeApp(firebaseConfig);
+ const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  window.db = db;
-  onSnapshot(collection(db, "data"), (snap) => {
-  const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  console.log("LIVE DATA:", rows);
-});
+  import { doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // אנחנו נשמור הכל במסמך אחד שנקרא 'main' בתוך 'data'
+  const docRef = doc(db, "data", "main");
+
+  // 1. האזנה לשינויים מהענן (קריאה)
+  onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+       console.log("התקבל עדכון מהענן!");
+       // אם הפונקציה למטה כבר קיימת, נעדכן את המסך
+       if (window.loadFromCloud) {
+         window.loadFromCloud(docSnap.data());
+       }
+    }
+  });
+
+  // 2. פונקציה לשמירה בענן (כתיבה) - נשתמש בה למטה
+  window.saveToCloud = async (jsonData) => {
+    try {
+      await setDoc(docRef, jsonData);
+      console.log("נשמר בענן בהצלחה");
+    } catch(e) {
+      console.error("שגיאה בשמירה:", e);
+      alert("שגיאה בשמירה לענן! בדוק חיבור.");
+    }
+  };
 
 window.db = db;
 
@@ -190,8 +211,12 @@ window.rows = rows;
   };
 console.log("SAVE TO LOCAL STORAGE");
 
-  const saveStore = () => { try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }catch(e){} };
-const loadStore = () => null;
+// הפונקציה החדשה שולחת לענן במקום לזיכרון המקומי
+const saveStore = () => { 
+  if(window.saveToCloud) {
+    window.saveToCloud(store);
+  }
+};const loadStore = () => null;
 
   // =========================
   // DEFAULT STORE
@@ -389,8 +414,15 @@ const loadStore = () => null;
     return s;
   }
 
-  let store = migrateStore(loadStore());
-  saveStore();
+// מתחילים עם ברירת מחדל עד שהענן ייטען
+let store = migrateStore(defaultStore);
+
+// פונקציה שהענן קורא לה כשיש מידע חדש
+window.loadFromCloud = (data) => {
+  store = migrateStore(data); // מעדכן את המשתנה המקומי
+  render(); // מצייר את המסך מחדש
+  notify('סונכרן מהענן ☁️');
+};  saveStore();
 
   // =========================
   // THEME BY STAFF
@@ -2364,6 +2396,7 @@ const loadStore = () => null;
 
 </body>
 </html>
+
 
 
 
