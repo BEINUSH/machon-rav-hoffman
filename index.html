@@ -57,6 +57,7 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+window.db = db;
 
   // בדיקת “ריל-טיים”: כל שינוי באוסף data יודפס ישר לקונסול
   onSnapshot(collection(db, "data"), (snap) => {
@@ -2356,6 +2357,7 @@ window.rows = rows;
 
 </body>
 </html>
+
 
 
 
