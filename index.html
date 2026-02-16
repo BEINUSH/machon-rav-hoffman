@@ -57,6 +57,7 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  window.db = db;
   onSnapshot(collection(db, "data"), (snap) => {
   const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   console.log("LIVE DATA:", rows);
@@ -187,6 +188,7 @@ window.rows = rows;
     document.body.appendChild(n);
     setTimeout(()=>{ n.style.opacity='0'; n.style.transition='opacity .25s'; setTimeout(()=>n.remove(),260); }, 2200);
   };
+console.log("SAVE TO LOCAL STORAGE");
 
   const saveStore = () => { try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }catch(e){} };
   const loadStore = () => { try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } };
@@ -2362,6 +2364,7 @@ window.rows = rows;
 
 </body>
 </html>
+
 
 
 
