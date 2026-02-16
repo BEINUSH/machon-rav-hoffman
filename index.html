@@ -57,6 +57,11 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  onSnapshot(collection(db, "data"), (snap) => {
+  const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  console.log("LIVE DATA:", rows);
+});
+
 window.db = db;
 
   // בדיקת “ריל-טיים”: כל שינוי באוסף data יודפס ישר לקונסול
@@ -2357,6 +2362,7 @@ window.rows = rows;
 
 </body>
 </html>
+
 
 
 
