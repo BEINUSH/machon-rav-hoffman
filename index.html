@@ -191,7 +191,7 @@ window.rows = rows;
 console.log("SAVE TO LOCAL STORAGE");
 
   const saveStore = () => { try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }catch(e){} };
-  const loadStore = () => { try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } };
+const loadStore = () => null;
 
   // =========================
   // DEFAULT STORE
@@ -2364,6 +2364,7 @@ console.log("SAVE TO LOCAL STORAGE");
 
 </body>
 </html>
+
 
 
 
