@@ -60,8 +60,6 @@
   window.db = db;
   onSnapshot(collection(db, "data"), (snap) => {
   const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
- window.LIVE_ROWS = rows;
-  store.tasks = rows;
   console.log("LIVE DATA:", rows);
 });
 
@@ -391,7 +389,7 @@ console.log("SAVE TO LOCAL STORAGE");
     return s;
   }
 
- // let store = migrateStore(loadStore());
+  let store = migrateStore(loadStore());
   saveStore();
 
   // =========================
@@ -2366,9 +2364,6 @@ console.log("SAVE TO LOCAL STORAGE");
 
 </body>
 </html>
-
-
-
 
 
 
