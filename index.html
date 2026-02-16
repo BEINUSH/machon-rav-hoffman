@@ -39,21 +39,29 @@
 </head>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import {
+    getFirestore,
+    collection,
+    onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIza....",
+    apiKey: "…",
     authDomain: "hoffman-admin.firebaseapp.com",
     projectId: "hoffman-admin",
     storageBucket: "hoffman-admin.firebasestorage.app",
     messagingSenderId: "453190767819",
-    appId: "1:453190767819:web:...."
+    appId: "…"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  window.db = db;
+  // בדיקת “ריל-טיים”: כל שינוי באוסף data יודפס ישר לקונסול
+  onSnapshot(collection(db, "data"), (snap) => {
+    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    console.log("LIVE DATA:", rows);
+  });
 </script>
 
 <body class="flex h-screen overflow-hidden">
@@ -2347,4 +2355,5 @@
 
 </body>
 </html>
+
 
