@@ -212,11 +212,13 @@ window.rows = rows;
 console.log("SAVE TO LOCAL STORAGE");
 
 // הפונקציה החדשה שולחת לענן במקום לזיכרון המקומי
-const saveStore = () => { 
-  if(window.saveToCloud) {
-    window.saveToCloud(store);
-  }
-};const loadStore = () => null;
+const saveStore = () => {
+    if (window.saveToCloud) {
+        window.saveToCloud(store);
+    } else {
+        console.error("Firebase not loaded yet");
+    }
+
 
   // =========================
   // DEFAULT STORE
@@ -415,8 +417,16 @@ const saveStore = () => {
   }
 
 // מתחילים עם ברירת מחדל עד שהענן ייטען
+// 1. מתחילים עם ברירת מחדל כדי שהמסך לא יהיה לבן
 let store = migrateStore(defaultStore);
 
+// 2. פונקציה שהענן מפעיל כשיש עדכון
+window.loadFromCloud = (data) => {
+    console.log("מעדכן נתונים מהענן...");
+    store = migrateStore(data);
+    render(); // מצייר מחדש את המסך
+    notify('סונכרן מהענן ☁️');
+};
 // פונקציה שהענן קורא לה כשיש מידע חדש
 window.loadFromCloud = (data) => {
   store = migrateStore(data); // מעדכן את המשתנה המקומי
@@ -2392,10 +2402,13 @@ window.loadFromCloud = (data) => {
   render();
 
 })();
+// חיבור הפונקציה render לעולם החיצון
+window.renderApp = render;
 </script>
 
 </body>
 </html>
+
 
 
 
